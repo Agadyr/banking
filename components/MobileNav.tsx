@@ -3,6 +3,7 @@ import {
     Sheet,
     SheetClose,
     SheetContent,
+    SheetTitle,
     SheetTrigger,
   } from "@/components/ui/sheet"  
 import { sidebarLinks } from "@/constants"
@@ -28,6 +29,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
                 />
             </SheetTrigger>
             <SheetContent side="left" className="border-none bg-white">
+                <SheetTitle></SheetTitle>
                 <nav className='flex flex-col gap-4'>
                 <Link href="/" className='flex mb-12 cursor-pointer items-center gap-1 px-4'>
                     <Image 
