@@ -12,6 +12,7 @@ import CustomInput from './CustomInput'
 import { authFormSchema } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { signIn, signUp } from '@/lib/actions/user.actions'
 
 
 const AuthForm = ({ type }: { type: string } )=> {
@@ -25,28 +26,35 @@ const AuthForm = ({ type }: { type: string } )=> {
         resolver: zodResolver(formSchema),
         defaultValues: {
           email: "",
-          password: ""
+          password: "",
+          firstName: type === "sign-up" ? "" : undefined,
+          lastName: type === "sign-up" ? "" : undefined,
+          address1: type === "sign-up" ? "" : undefined,
+          city: type === "sign-up" ? "" : undefined,
+          state: type === "sign-up" ? "" : undefined,
+          postalCode: type === "sign-up" ? "" : undefined,
+          dateOfBirth: type === "sign-up" ? "" : undefined,
+          ssn: type === "sign-up" ? "" : undefined,
         },
-      })
+      });
+      
      
       const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setLoading(true)
 
         try {
-            if ( type === 'sign-up') {
-                // const newUser = await SignUp(data)
+            if (type === 'sign-up') {
+                const newUser = await signUp(data)
 
-                // setUser(newUser)
+                setUser(newUser)
             }
-            if ( type === 'sign-in') {
-                // const response = await SignIn({
-                //     email:data.email
-                //     password:data.password
-                // })
+            if (type === 'sign-in') {
+                const response = await signIn({
+                    email: data.email,
+                    password: data.password
+                })
 
-                // if (response) {
-                    // router.push('/')
-                // }
+                if (response) router.push('/')
 
                 // setUser(newUser)
             }
@@ -61,7 +69,7 @@ const AuthForm = ({ type }: { type: string } )=> {
         return (
             <section className='auth-form'>
                 <header className='flex flex-col gap-5 md:gap-8'>
-                    <Link href="/" className='flex mb-12 cursor-pointer items-center gap-1'>
+                    <Link href="/" className='flex mb-6 cursor-pointer items-center gap-1'>
                         <Image 
                             src="/icons/logo.svg"
                             width={34}
@@ -72,7 +80,7 @@ const AuthForm = ({ type }: { type: string } )=> {
                     </Link>
 
                     <div className='flex flex-col gap-1 md:gap-3'>
-                        <h1 className='text-24 lg-36 font-semibold text-gray-900'>
+                        <h1 className='text-30 lg-36 font-semibold text-gray-900'>
                             {user ? 'Link Account' : type === 'sign-in' ? 'Sign-in' : 'Sign Up'}
                             <p className='text-16 font-normal text-gray-600'>
                                 {user ? "Link your account to get started" : "Please enter your details"}
