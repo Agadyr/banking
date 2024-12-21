@@ -16,9 +16,9 @@ import { signIn, signUp } from '@/lib/actions/user.actions'
 import PlaidLink from './PlaidLink'
 
 
-const AuthForm = ({ type }: { type: string } )=> {
+const AuthForm = ({ type, loggedIn }: { type: string,loggedIn: User } )=> {
     const router = useRouter()
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(loggedIn || null)
     const [isLoading, setLoading] = useState(false)
 
     const formSchema = authFormSchema(type)
@@ -78,7 +78,7 @@ const AuthForm = ({ type }: { type: string } )=> {
         }
 
       }
-
+      console.log(user)
         return (
             <section className='auth-form'>
                 <header className='flex flex-col gap-5 md:gap-8'>
