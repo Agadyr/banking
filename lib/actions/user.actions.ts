@@ -1,5 +1,6 @@
 'use server'
 
+import NodeCache from "node-cache";
 import { cookies } from "next/headers";
 import { createAdminClient, createSessionClient } from "../appwrite";
 import { ID, Query } from "node-appwrite";
@@ -9,127 +10,145 @@ import { plaidClient } from "../plaid";
 import { revalidatePath } from "next/cache";
 import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
 
-const { 
+const cache = new NodeCache({ stdTTL: 3600 });
+const {
     APPWRITE_DATABASE_ID: DATABASE_ID,
     APPWRITE_USER_COLLECTION_ID: USER_COLLECTION_ID,
     APPWRITE_BANK_COLLECTION_ID: BANK_COLLECTION_ID,
 } = process.env;
 
-
 export const getUserInfo = async ({ userId }: getUserInfoProps) => {
     try {
-      const { database } = await createAdminClient();
-  
-      const user = await database.listDocuments(
-        DATABASE_ID!,
-        USER_COLLECTION_ID!,
-        [Query.equal('userId', [userId])]
-      )
-  
-      return parseStringify(user.documents[0]);
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  
-  export const signIn = async ({ email, password }: signInProps) => {
-    try {
-      const { account } = await createAdminClient();
-      const session = await account.createEmailPasswordSession(email, password);
-  
-      cookies().set("appwrite-session", session.secret, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-        secure: true,
-      });
-  
-      const user = await getUserInfo({ userId: session.userId }) 
-  
-      return parseStringify(user);
-    } catch (error) {
-      console.error('Error', error);
-    }
-  }
-  
-  export const signUp = async ({ password, ...userData }: SignUpParams) => {
-    const { email, firstName, lastName } = userData;
-    
-    let newUserAccount;
-  
-    try {
-      const { account, database } = await createAdminClient();
-  
-      newUserAccount = await account.create(
-        ID.unique(), 
-        email, 
-        password, 
-        `${firstName} ${lastName}`
-      );
-  
-      if(!newUserAccount) throw new Error('Error creating user')
-  
-      const dwollaCustomerUrl = await createDwollaCustomer({
-        ...userData,
-        type: 'personal'
-      })
-  
-      if(!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer')
-  
-      const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
-  
-      const newUser = await database.createDocument(
-        DATABASE_ID!,
-        USER_COLLECTION_ID!,
-        ID.unique(),
-        {
-          ...userData,
-          userId: newUserAccount.$id,
-          dwollaCustomerId,
-          dwollaCustomerUrl
+        const cacheKey = `user-info-${userId}`;
+        const cachedData = cache.get(cacheKey);
+        if (cachedData) {
+            console.log("Returning cached user info");
+            return cachedData;
         }
-      )
-  
-      const session = await account.createEmailPasswordSession(email, password);
-  
-      cookies().set("appwrite-session", session.secret, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-        secure: true,
-      });
-  
-      return parseStringify(newUser);
+
+        const { database } = await createAdminClient();
+
+        const user = await database.listDocuments(
+            DATABASE_ID!,
+            USER_COLLECTION_ID!,
+            [Query.equal('userId', [userId])]
+        );
+
+        const userData = parseStringify(user.documents[0]);
+        cache.set(cacheKey, userData);
+        return userData;
     } catch (error) {
-      console.error('Error', error);
+        console.log(error);
     }
-  }
+};
+
+export const signIn = async ({ email, password }: signInProps) => {
+    try {
+        const { account } = await createAdminClient();
+        const session = await account.createEmailPasswordSession(email, password);
+
+        cookies().set("appwrite-session", session.secret, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+            secure: true,
+        });
+
+        const user = await getUserInfo({ userId: session.userId });
+        return user;
+    } catch (error) {
+        console.error('Error', error);
+    }
+};
+
+export const signUp = async ({ password, ...userData }: SignUpParams) => {
+    const { email, firstName, lastName } = userData;
+
+    let newUserAccount;
+
+    try {
+        const { account, database } = await createAdminClient();
+
+        newUserAccount = await account.create(
+            ID.unique(),
+            email,
+            password,
+            `${firstName} ${lastName}`
+        );
+
+        if (!newUserAccount) throw new Error('Error creating user');
+
+        const dwollaCustomerUrl = await createDwollaCustomer({
+            ...userData,
+            type: 'personal'
+        });
+
+        if (!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer');
+
+        const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
+
+        const newUser = await database.createDocument(
+            DATABASE_ID!,
+            USER_COLLECTION_ID!,
+            ID.unique(),
+            {
+                ...userData,
+                userId: newUserAccount.$id,
+                dwollaCustomerId,
+                dwollaCustomerUrl
+            }
+        );
+
+        const session = await account.createEmailPasswordSession(email, password);
+
+        cookies().set("appwrite-session", session.secret, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+            secure: true,
+        });
+
+        return parseStringify(newUser);
+    } catch (error) {
+        console.error('Error', error);
+    }
+};
 
 export async function getLoggedInUser() {
     try {
-      const { account } = await createSessionClient();
-      const result = await account.get();
-  
-      const user = await getUserInfo({ userId: result.$id})
-  
-      return parseStringify(user);
-    } catch (error) {
-      console.log(error)
-      return null;
-    }
-  }
+        const cacheKey = "logged-in-user";
+        const cachedData = cache.get(cacheKey);
+        if (cachedData) {
+            console.log("Returning cached logged-in user data");
+            return cachedData;
+        }
+        const { account } = await createSessionClient();
+        const result = await account.get();
 
-export const logoutAccount = async() => {
+        const user = await getUserInfo({ userId: result.$id });
+
+        cache.set(cacheKey, user);
+
+        return user;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
+export const logoutAccount = async () => {
     try {
         const { account } = await createSessionClient();
-        (await cookies()).delete('appwrite-session')
+        cookies().delete('appwrite-session');
 
-        await account.deleteSession('current')
+        await account.deleteSession('current');
+
+        cache.del("logged-in-user");
     } catch (error) {
-        console.log(error)
-        return null
+        console.log(error);
+        return null;
     }
-} 
+};
 
 export const createLinkToken = async (user: User) => {
     try {
