@@ -125,7 +125,7 @@ export const getTransactions = async ({
   accessToken,
 }: getTransactionsProps) => {
   let hasMore = true;
-  let transactions: any = [];
+  let transactions: any [];
   try {
     // Iterate through each page of new transaction updates for item
     while (hasMore) {
