@@ -160,14 +160,6 @@ export const createBankAccount = async({
     fundingSourceUrl,
     shareableId
 }: createBankAccountProps) => {
-    console.log("Creating bank account with data:", {
-      userId,
-      bankId,
-      accountId,
-      accessToken,
-      fundingSourceUrl,
-      shareableId,
-    });
     try {
       const { database } = await createAdminClient();
       const bankAccount = await database.createDocument(
@@ -183,7 +175,6 @@ export const createBankAccount = async({
               shareableId,
           }
       );
-      console.log("Bank account created successfully:", bankAccount);
       return parseStringify(bankAccount);
   } catch (error) {
       console.error("Error while creating bank account:",error);
@@ -249,7 +240,7 @@ export const exchangePublicToken = async ({
         publicTokenExchange: "complete",
       });
     } catch (error) {
-      console.error("An error occurred while creating exchanging token:", error.response?.data || error.message);
+      console.error("An error occurred while creating exchanging token:", error);
     }
   }
 
@@ -257,12 +248,12 @@ export const exchangePublicToken = async ({
     try {
       const { database } = await createAdminClient();
   
+      revalidatePath("/banks")
       const banks = await database.listDocuments(
         DATABASE_ID!,
         BANK_COLLECTION_ID!,
         [Query.equal('userId', [userId])]
       )
-      console.log(banks.documents, 'michael')
       return parseStringify(banks.documents);
     } catch (error) {
       console.log(error)
@@ -272,13 +263,32 @@ export const exchangePublicToken = async ({
   export const getBank = async ({ documentId }: getBankProps) => {
     try {
       const { database } = await createAdminClient();
-  
+
+      revalidatePath("/bank")
       const bank = await database.listDocuments(
         DATABASE_ID!,
         BANK_COLLECTION_ID!,
         [Query.equal('$id', [documentId])]
       )
   
+      return parseStringify(bank.documents[0]);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  export const getBankByAccountId = async ({ accountId }: getBankByAccountIdProps) => {
+    try {
+      const { database } = await createAdminClient();
+
+      revalidatePath("/bank")
+      const bank = await database.listDocuments(
+        DATABASE_ID!,
+        BANK_COLLECTION_ID!,
+        [Query.equal('accountId', [accountId])]
+      )
+  
+      if(bank.total !== 1) return null
       return parseStringify(bank.documents[0]);
     } catch (error) {
       console.log(error)

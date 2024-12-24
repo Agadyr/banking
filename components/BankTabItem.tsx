@@ -1,11 +1,10 @@
-
-"use client";
-
+'use client'
+import React, { memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import { cn, formUrlQuery } from "@/lib/utils";
 
-export const BankTabItem = ({ account, appwriteItemId }: BankTabItemProps) => {
+const BankTabItem = memo(({ account, appwriteItemId }: BankTabItemProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isActive = appwriteItemId === account?.appwriteItemId;
@@ -16,7 +15,7 @@ export const BankTabItem = ({ account, appwriteItemId }: BankTabItemProps) => {
       key: "id",
       value: account?.appwriteItemId,
     });
-    router.push(newUrl, { scroll: false });
+    router.replace(newUrl, { scroll: false });
   };
 
   return (
@@ -35,4 +34,8 @@ export const BankTabItem = ({ account, appwriteItemId }: BankTabItemProps) => {
       </p>
     </div>
   );
-};
+});
+
+BankTabItem.displayName = "BankTabItem";
+
+export default BankTabItem;

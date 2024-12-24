@@ -61,6 +61,7 @@ declare type Account = {
   subtype: string;
   appwriteItemId: string;
   sharableId: string;
+  sharaebleId?:string;
 };
 
 declare type Transaction = {
@@ -90,6 +91,7 @@ declare type Bank = {
   fundingSourceUrl: string;
   userId: string;
   sharableId: string;
+  shareableId?: string;
 };
 
 declare type AccountTypes =
