@@ -13,12 +13,19 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Footer from "./Footer"
+import { useEffect, useState } from "react"
+import LoadingNav from "./LoadingNav"
 
 const MobileNav = ({ user }: MobileNavProps) => {
   const pathname = usePathname();
+  const [loading, setIsLoading] = useState<boolean | null>(null);
+  useEffect(() => {
+    setIsLoading(false)
+  }, [pathname])
 
   return (
     <section className="w-full max-w-[264px]">
+      <LoadingNav loading={loading} />
       <Sheet>
         <SheetTrigger>
           <Image
@@ -48,7 +55,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
 
                 return (
                   <SheetClose asChild key={item.route}>
-                    <Link href={item.route} key={item.label}
+                    <Link href={item.route} key={item.label} onClick={() => setIsLoading(true)}
                       className={cn('mobilenav-sheet_close w-full', { 'bg-bank-gradient': isActive })}
                     >
                         <Image 

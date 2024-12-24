@@ -19,6 +19,9 @@ const config = {
       },
     },
     extend: {
+      zIndex: {
+        10000: '10000',
+      },
       colors: {
         fill: {
           1: "rgba(255, 255, 255, 0.10)",

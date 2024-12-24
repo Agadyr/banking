@@ -7,12 +7,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Footer from './Footer'
 import PlaidLink from './PlaidLink'
+import { useEffect, useState } from 'react'
+import LoadingNav from './LoadingNav'
 
 const Sidebar = ({ user }: SiderbarProps) => {
+  const [loading, setIsLoading] = useState<boolean | null>(null);
   const pathname = usePathname();
-
+  useEffect(() => {
+    setIsLoading(false)
+  }, [pathname])
   return (
     <section className="sidebar">
+      <LoadingNav loading={loading} />
       <nav className="flex flex-col gap-4">
         <Link href="/" className="mb-12 cursor-pointer flex items-center gap-2">
           <Image 
@@ -29,7 +35,7 @@ const Sidebar = ({ user }: SiderbarProps) => {
           const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`)
 
           return (
-            <Link href={item.route} key={item.label}
+            <Link href={item.route} key={item.label} onClick={() => setIsLoading(true)}
               className={cn('sidebar-link', { 'bg-bank-gradient': isActive })}
             >
               <div className="relative size-6">
