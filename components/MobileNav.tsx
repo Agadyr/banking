@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation"
 import Footer from "./Footer"
 import { useEffect, useState } from "react"
 import LoadingNav from "./LoadingNav"
+import PlaidLink from "./PlaidLink"
 
 const MobileNav = ({ user }: MobileNavProps) => {
   const pathname = usePathname();
@@ -50,13 +51,13 @@ const MobileNav = ({ user }: MobileNavProps) => {
           <div className="mobilenav-sheet">
             <SheetClose asChild>
               <nav className="flex h-full flex-col gap-6 pt-16 text-white">
-                  {sidebarLinks.map((item) => {
+                {sidebarLinks.map((item) => {
                 const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`)
 
                 return (
                   <SheetClose asChild key={item.route}>
                     <Link href={item.route} key={item.label} onClick={() => setIsLoading(true)}
-                      className={cn('mobilenav-sheet_close w-full', { 'bg-bank-gradient': isActive })}
+                      className={cn('mobilenav-sheet_close hover:hover-effect w-full', { 'bg-bank-gradient': isActive })}
                     >
                         <Image 
                           src={item.imgURL}
@@ -74,6 +75,7 @@ const MobileNav = ({ user }: MobileNavProps) => {
                   </SheetClose>
                 )
               })}
+            <PlaidLink user={user} />
 
               USER
               </nav>

@@ -36,7 +36,7 @@ const Sidebar = ({ user }: SiderbarProps) => {
 
           return (
             <Link href={item.route} key={item.label} onClick={() => setIsLoading(true)}
-              className={cn('sidebar-link', { 'bg-bank-gradient': isActive })}
+              className={cn('sidebar-link hover:hover-effect', { 'bg-bank-gradient': isActive })}
             >
               <div className="relative size-6">
                 <Image 

@@ -376,6 +376,19 @@
     @apply flex gap-3 items-center py-1 md:p-3 2xl:p-4 rounded-lg justify-center xl:justify-start;
   }
 
+  .hover-effect {
+    @apply bg-bank-gradient text-white opacity-75;
+  }
+  
+  .hover-effect img {
+    @apply brightness-[3] invert-0;
+  }
+  
+  .hover-effect p {
+    @apply text-white;
+  }
+  
+
   .sidebar-label {
     @apply text-16 font-semibold text-black-2 max-xl:hidden;
   }
